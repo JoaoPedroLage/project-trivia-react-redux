@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { setUser, getToken } from '../redux/actions/loginAction';
+import { getToken, setUser } from '../redux/actions/loginAction';
 import logo from '../trivia.png';
 
 class Login extends Component {
@@ -15,6 +15,7 @@ class Login extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.enableButton = this.enableButton.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleChange({ target }) {
@@ -39,45 +40,59 @@ class Login extends Component {
     history.push('/game');
   }
 
+  handleClick() {
+    const { history } = this.props;
+    history.push('/config');
+  }
+
   render() {
     const { playerName, playerEmail, disable } = this.state;
     return (
-      <form onSubmit={ this.handleSubmit }>
-        <img src={ logo } className="App-logo" alt="logo" />
-        <label
-          htmlFor="input-player-name"
-        >
-          {' '}
-          Nome:
-          <input
-            data-testid="input-player-name"
-            id="player-name"
-            name="playerName"
-            value={ playerName }
-            onChange={ this.handleChange }
-          />
-        </label>
-        <label
-          htmlFor="gravatar-email"
-        >
-          {' '}
-          Email:
-          <input
-            data-testid="input-gravatar-email"
-            id="gravatar-email"
-            name="playerEmail"
-            value={ playerEmail }
-            onChange={ this.handleChange }
-          />
-        </label>
+      <div>
+        <form onSubmit={ this.handleSubmit }>
+          <img src={ logo } className="App-logo" alt="logo" />
+          <label
+            htmlFor="input-player-name"
+          >
+            {' '}
+            Nome:
+            <input
+              data-testid="input-player-name"
+              id="player-name"
+              name="playerName"
+              value={ playerName }
+              onChange={ this.handleChange }
+            />
+          </label>
+          <label
+            htmlFor="gravatar-email"
+          >
+            {' '}
+            Email:
+            <input
+              data-testid="input-gravatar-email"
+              id="gravatar-email"
+              name="playerEmail"
+              value={ playerEmail }
+              onChange={ this.handleChange }
+            />
+          </label>
+          <button
+            type="submit"
+            data-testid="btn-play"
+            disabled={ disable }
+          >
+            Jogar
+          </button>
+        </form>
         <button
-          type="submit"
-          data-testid="btn-play"
-          disabled={ disable }
+          type="button"
+          data-testid="btn-settings"
+          onClick={ this.handleClick }
         >
-          Jogar
+          Configurações
         </button>
-      </form>
+      </div>
     );
   }
 }
