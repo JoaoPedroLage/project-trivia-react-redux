@@ -34,8 +34,8 @@ class Login extends Component {
   handleSubmit(event) {
     event.preventDefault();
     const { history, dispatchGetToken, getName } = this.props;
-    const { email, name } = this.state;
-    getName(name, email);
+    const { playerEmail, playerName } = this.state;
+    getName(playerName, playerEmail);
     dispatchGetToken();
     history.push('/game');
   }
