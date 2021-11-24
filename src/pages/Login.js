@@ -1,11 +1,12 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { setUser, getToken } from '../redux/actions/loginAction';
 import logo from '../trivia.png';
-// import { connect } from 'react-redux';
 
 class Login extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       playerName: '',
       playerEmail: '',
@@ -13,7 +14,7 @@ class Login extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.enableButton = this.enableButton.bind(this);
-    // this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleChange({ target }) {
@@ -29,19 +30,19 @@ class Login extends Component {
     } else this.setState({ disable: true });
   }
 
-  // handleSubmit() {
-  //   e.preventDefault();
-  //   const { history, getName } = this.props;
-  //   const { email } = this.state;
-  //   getEmail(email);
-  //   history.push('/game');
-  // }
+  handleSubmit(event) {
+    event.preventDefault();
+    const { history, dispatchGetToken, getName } = this.props;
+    const { email, name } = this.state;
+    getName(name, email);
+    dispatchGetToken();
+    history.push('/game');
+  }
 
   render() {
     const { playerName, playerEmail, disable } = this.state;
     return (
-      // <form onSubmit={ this.handleSubmit }>
-      <form>
+      <form onSubmit={ this.handleSubmit }>
         <img src={ logo } className="App-logo" alt="logo" />
         <label
           htmlFor="input-player-name"
@@ -81,10 +82,17 @@ class Login extends Component {
   }
 }
 
-// const mapDispatchToProps = (dispatch) => ({
-//   getName: (state) => dispatch(state),
-// });
+const mapDispatchToProps = (dispatch) => ({
+  getName: (name, email) => dispatch(setUser(name, email)),
+  dispatchGetToken: () => dispatch(getToken()),
+});
 
-// export default connect(null, mapDispatchToProps)(Login);
+Login.propTypes = {
+  dispatchGetToken: PropTypes.func.isRequired,
+  getName: PropTypes.func.isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func,
+  }).isRequired,
+};
 
-export default Login;
+export default connect(null, mapDispatchToProps)(Login);
