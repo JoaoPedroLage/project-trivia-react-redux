@@ -1,8 +1,14 @@
-import { SET_USER } from '../actions/loginAction';
+import {
+  SET_USER,
+  RECEIVED_API,
+  REQUEST_API,
+  FAILED_REQUEST } from '../actions/loginAction';
 
 const INITIAL_STATE = {
   playerName: '',
-  layerEmail: '',
+  playerEmail: '',
+  token: '',
+  isFetching: false,
 };
 
 export default function loginReducer(state = INITIAL_STATE, action) {
@@ -10,9 +16,15 @@ export default function loginReducer(state = INITIAL_STATE, action) {
   case SET_USER:
     return {
       ...state,
-      playerName: action.payload.name,
-      playerEmail: action.payload.email,
+      playerName: action.name,
+      playerEmail: action.email,
     };
+  case REQUEST_API:
+    return { ...state, isFetching: true };
+  case RECEIVED_API:
+    return { ...state, token: action.token, isFetching: false };
+  case FAILED_REQUEST:
+    return { ...state, error: action.err, isFetching: false };
   default:
     return state;
   }
