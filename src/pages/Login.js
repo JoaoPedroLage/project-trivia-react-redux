@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getToken, setUser } from '../redux/actions/loginAction';
-import { getQuestions } from '../redux/actions/gameAction';
 import logo from '../trivia.png';
 
 class Login extends Component {
@@ -34,11 +33,10 @@ class Login extends Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    const { history, dispatchGetToken, getName, dispatchGetQuestions } = this.props;
+    const { history, dispatchGetToken, getName } = this.props;
     const { playerEmail, playerName } = this.state;
     getName(playerName, playerEmail);
     dispatchGetToken();
-    dispatchGetQuestions();
     history.push('/game');
   }
 
@@ -102,7 +100,6 @@ class Login extends Component {
 const mapDispatchToProps = (dispatch) => ({
   getName: (name, email) => dispatch(setUser(name, email)),
   dispatchGetToken: () => dispatch(getToken()),
-  dispatchGetQuestions: () => dispatch(getQuestions()),
 });
 
 Login.propTypes = {
@@ -111,7 +108,6 @@ Login.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func,
   }).isRequired,
-  dispatchGetQuestions: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(Login);

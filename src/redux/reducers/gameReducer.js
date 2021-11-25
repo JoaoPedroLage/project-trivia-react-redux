@@ -1,7 +1,7 @@
 import { RECEIVED_API_QUEST } from '../actions/gameAction';
 
 const INITIAL_STATE = {
-  questions: {},
+  questions: [],
 };
 
 export default function questionsReducer(state = INITIAL_STATE, action) {
@@ -9,7 +9,7 @@ export default function questionsReducer(state = INITIAL_STATE, action) {
   case RECEIVED_API_QUEST:
     return {
       ...state,
-      questions: action.payload.results,
+      questions: action.payload,
     };
   default:
     return state;

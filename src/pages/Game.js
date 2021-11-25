@@ -1,14 +1,12 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { getQuestions } from '../redux/actions/gameAction';
 import getGravatar from '../services/gravatar';
 
 class Game extends Component {
   constructor() {
     super();
-    // this.state = {
-    //   answer: '',
-    // };
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
     // this.handleChange = this.handleChange.bind(this);
@@ -19,68 +17,59 @@ class Game extends Component {
   //   this.setState({ answer: value });
   // }
 
+  componentDidMount() {
+    const { dispatchGetQuestions } = this.props;
+    dispatchGetQuestions();
+  }
+
   renderQuestions() {
     const { questions } = this.props;
-    console.log(questions);
     return (
       questions.map((element, index) => (
-      <div key={ index }>
-        <h4 data-testid="question-category">
-          { element.category }
-        </h4>
-        <h5 data-testid="question-text">
-          { element.question }
-        </h5>
-        <section>
-          { this.renderAnswer(element) }
-        </section>
-      </div>
-      )
+        <div key={ index }>
+          <h4 data-testid="question-category">
+            { element.category }
+          </h4>
+          <h5 data-testid="question-text">
+            { element.question }
+          </h5>
+          <section>
+            { this.renderAnswer(element) }
+          </section>
+        </div>
+      ))
     );
-    )
   }
 
   renderAnswer(element) {
-    return (
-      <>
-        <label htmlFor={ element.correct_answer }>
-          { element.correct_answer }
-          <input
-            type="radio"
-            id={ element.correct_answer }
-            name="question"
-            value={ element.correct_answer }
-            data-testid="correct-answer"
-            onChange={ this.handleChange }
-          />
-        </label>
-        {
-          element.incorrect_answers.map((answer) => {
-            const incorrectID = `wrong-answer-${answer}`;
-            return (
-              <label
-                htmlFor={ answer }
-                key={ answer }
-              >
-                { answer }
-                <input
-                  type="radio"
-                  id={ answer }
-                  name="question"
-                  value={ element.incorrect_answers }
-                  data-testid={ incorrectID }
-                  onChange={ this.handleChange }
-                />
-              </label>
-            );
-          })
-        }
-      </>
-    );
+    // randomificando as respostas
+    const answers = [element.correct_answer, ...element.incorrect_answers];
+    const magicNumber = 0.5;
+    // referencia: https://flaviocopes.com/how-to-shuffle-array-javascript/
+    const randomAnswers = answers.sort(() => Math.random() - magicNumber);
+    // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
+    // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
+    return randomAnswers.map((answer) => (
+      <label
+        htmlFor={ answer }
+        key={ answer }
+      >
+        { answer }
+        <input
+          type="radio"
+          id={ answer }
+          name="question"
+          value={ answer }
+          data-testid="correct-answer"
+          // onChange={ this.handleChange }
+        />
+      </label>
+    ));
   }
 
   render() {
-    const { name, email } = this.props;
+    const { name, email, questions } = this.props;
+    console.log(questions);
     return (
       <div>
         <header data-testid="header-profile-picture">
@@ -105,16 +94,22 @@ Game.propTypes = {
   name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
     category: PropTypes.string,
-    question: PropTypes.string,
     correct_answer: PropTypes.string,
-    incorrect_answer: PropTypes.string,
+    incorrect_answer: PropTypes.arrayOf(PropTypes.string),
+    map: PropTypes.func,
+    question: PropTypes.string,
   }).isRequired,
+  dispatchGetQuestions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   name: state.loginReducer.playerName,
   email: state.loginReducer.playerEmail,
-  questions: state.gameReducer.questions,
+  questions: state.questionsReducer.questions,
 });
 
-export default connect(mapStateToProps, null)(Game);
+const mapDispatchToProps = (dispatch) => ({
+  dispatchGetQuestions: () => dispatch(getQuestions()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Game);
