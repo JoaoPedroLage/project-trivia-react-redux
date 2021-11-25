@@ -49,27 +49,46 @@ class Game extends Component {
     const randomAnswers = answers.sort(() => Math.random() - magicNumber);
     // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
     // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
-    return randomAnswers.map((answer) => (
-      <label
-        htmlFor={ answer }
-        key={ answer }
-      >
-        { answer }
-        <input
-          type="radio"
-          id={ answer }
-          name="question"
-          value={ answer }
-          data-testid="correct-answer"
+    return randomAnswers.map((answer) => {
+      if (answer === element.correct_answer) {
+        return (
+          <label
+            htmlFor={ answer }
+            key={ answer }
+          >
+            { answer }
+            <input
+              type="radio"
+              id={ answer }
+              name="question"
+              value={ answer }
+              data-testid="correct-answer"
+              // onChange={ this.handleChange }
+            />
+          </label>
+        );
+      }
+      return (
+        <label
+          htmlFor={ answer }
+          key={ answer }
+        >
+          { answer }
+          <input
+            type="radio"
+            id={ answer }
+            name="question"
+            value={ answer }
+            data-testid="incorrect-answer"
           // onChange={ this.handleChange }
-        />
-      </label>
-    ));
+          />
+        </label>
+      );
+    });
   }
 
   render() {
-    const { name, email, questions } = this.props;
-    console.log(questions);
+    const { name, email } = this.props;
     return (
       <div>
         <header data-testid="header-profile-picture">
