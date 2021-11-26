@@ -90,9 +90,8 @@ class Game extends Component {
     const disabled = timer <= 0 || answer !== '';
     // randomificando as respostas
     const answers = [element.correct_answer, ...element.incorrect_answers];
-    const magicNumber = 0.5;
     // referencia: https://flaviocopes.com/how-to-shuffle-array-javascript/
-    const randomAnswers = answers.sort(() => Math.random() - magicNumber);
+    const randomAnswers = answers.sort();
     // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
     // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
     return randomAnswers.map((quest, i) => {
