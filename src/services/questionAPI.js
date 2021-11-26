@@ -1,5 +1,5 @@
-const fetchQuestionAPI = async () => {
-  const token = localStorage.getItem('token');
+const fetchQuestionAPI = async (token) => {
+  // const token = localStorage.getItem('token');
   try {
     const response = await fetch(`https://opentdb.com/api.php?amount=5&token=${token}`);
     const json = await response.json();

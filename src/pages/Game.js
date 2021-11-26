@@ -18,14 +18,16 @@ class Game extends Component {
   // }
 
   componentDidMount() {
-    const { dispatchGetQuestions } = this.props;
-    dispatchGetQuestions();
+    const { dispatchGetQuestions, token } = this.props;
+    dispatchGetQuestions(token);
   }
 
   renderQuestions() {
     const { questions } = this.props;
+    console.log(questions);
     return (
-      questions.map((element, index) => (
+      questions.length > 0
+      && questions.map((element, index) => (
         <div key={ index }>
           <h4 data-testid="question-category">
             { element.category }
@@ -49,22 +51,42 @@ class Game extends Component {
     const randomAnswers = answers.sort(() => Math.random() - magicNumber);
     // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
     // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
-    return randomAnswers.map((answer) => (
-      <label
-        htmlFor={ answer }
-        key={ answer }
-      >
-        { answer }
-        <input
-          type="radio"
-          id={ answer }
-          name="question"
-          value={ answer }
-          data-testid="correct-answer"
-          // onChange={ this.handleChange }
-        />
-      </label>
-    ));
+    return randomAnswers.map((answer) => {
+      if (answer === element.correct_answer) {
+        return (
+          <label
+            htmlFor={ answer }
+            key={ answer }
+          >
+            { answer }
+            <input
+              type="radio"
+              id={ answer }
+              name="question"
+              value={ answer }
+              data-testid="correct-answer"
+              // onChange={ this.handleChange }
+            />
+          </label>
+        );
+      }
+      return (
+        <label
+          htmlFor={ answer }
+          key={ answer }
+        >
+          { answer }
+          <input
+            type="radio"
+            id={ answer }
+            name="question"
+            value={ answer }
+            data-testid="wrong-answer"
+            // onChange={ this.handleChange }
+          />
+        </label>
+      );
+    });
   }
 
   render() {
@@ -90,26 +112,29 @@ class Game extends Component {
 }
 
 Game.propTypes = {
+  dispatchGetQuestions: PropTypes.func.isRequired,
   email: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
     category: PropTypes.string,
     correct_answer: PropTypes.string,
     incorrect_answer: PropTypes.arrayOf(PropTypes.string),
+    length: PropTypes.number,
     map: PropTypes.func,
     question: PropTypes.string,
   }).isRequired,
-  dispatchGetQuestions: PropTypes.func.isRequired,
+  token: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   name: state.loginReducer.playerName,
   email: state.loginReducer.playerEmail,
   questions: state.questionsReducer.questions,
+  token: state.loginReducer.token,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchGetQuestions: () => dispatch(getQuestions()),
+  dispatchGetQuestions: (token) => dispatch(getQuestions(token)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Game);
