@@ -7,39 +7,46 @@ import getGravatar from '../services/gravatar';
 class Game extends Component {
   constructor() {
     super();
+    this.state = {
+      // answer: '',
+      answerIndex: 0,
+    };
+
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
-    // this.handleChange = this.handleChange.bind(this);
+    // this.handleClick = this.handleClick.bind(this);
   }
-
-  // handleChange({ target }) {
-  //   const { value } = target;
-  //   this.setState({ answer: value });
-  // }
 
   componentDidMount() {
     const { dispatchGetQuestions, token } = this.props;
     dispatchGetQuestions(token);
   }
 
+  // handleClick({ target }) {
+  //   const { value } = target;
+  //   this.setState({ answer: value });
+  // }
+
   renderQuestions() {
     const { questions } = this.props;
+    const { answerIndex } = this.state;
     console.log(questions);
     return (
       questions.length > 0
       && questions.map((element, index) => (
-        <div key={ index }>
-          <h4 data-testid="question-category">
-            { element.category }
-          </h4>
-          <h5 data-testid="question-text">
-            { element.question }
-          </h5>
-          <section>
-            { this.renderAnswer(element) }
-          </section>
-        </div>
-      ))
+        answerIndex === index && ( // requisito 6 - o ternário faz renderizar uma questão de cada vez
+          <div key={ index }>
+            <h4 data-testid="question-category">
+              { element.category }
+            </h4>
+            <h5 data-testid="question-text">
+              { element.question }
+            </h5>
+            <section>
+              { this.renderAnswer(element) }
+            </section>
+          </div>
+        )))
     );
   }
 
@@ -51,40 +58,32 @@ class Game extends Component {
     const randomAnswers = answers.sort(() => Math.random() - magicNumber);
     // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
     // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
-    return randomAnswers.map((answer) => {
+    return randomAnswers.map((answer, i) => {
       if (answer === element.correct_answer) {
         return (
-          <label
-            htmlFor={ answer }
-            key={ answer }
+          <button
+            type="button"
+            name="question"
+            value="correct-answer"
+            data-testid="correct-answer"
+            onClick={ this.handleClick }
           >
             { answer }
-            <input
-              type="radio"
-              id={ answer }
-              name="question"
-              value={ answer }
-              data-testid="correct-answer"
-              // onChange={ this.handleChange }
-            />
-          </label>
+          </button>
         );
       }
       return (
-        <label
-          htmlFor={ answer }
+        <button
           key={ answer }
+          type="button"
+          id={ answer }
+          name="question"
+          value="wrong-answer"
+          data-testid={ `wrong-answer-${i}` }
+          onClick={ this.handleClick }
         >
           { answer }
-          <input
-            type="radio"
-            id={ answer }
-            name="question"
-            value={ answer }
-            data-testid="wrong-answer"
-            // onChange={ this.handleChange }
-          />
-        </label>
+        </button>
       );
     });
   }
