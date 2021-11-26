@@ -26,13 +26,18 @@ class Game extends Component {
   componentDidMount() {
     const { dispatchGetQuestions, token } = this.props;
     dispatchGetQuestions(token);
+
     this.createTimer();
+
+    const state = { player: {
+      name: '', assertions: 0, score: 0, gravatarEmail: '',
+    } };
+    localStorage.setItem('state', JSON.string(state));
   }
 
   componentDidUpdate() {
     const { dispatchSetCount, dispatchSetScore, userName, userEmail } = this.props;
     const { assertions, score, timer } = this.state;
-    const { timer } = this.props;
     const TIME_LIMIT = 0;
     if (timer === TIME_LIMIT) {
       clearInterval(this.gameTimer);
@@ -40,9 +45,9 @@ class Game extends Component {
     dispatchSetCount(assertions);
     dispatchSetScore(score);
     const state = { player: {
-      name: userName, assertions, score, gravatarEmail: userEmail
-    }};
-    localStorage
+      name: userName, assertions, score, gravatarEmail: userEmail,
+    } };
+    localStorage.setItem('state', JSON.stringify(state));
   }
 
   handleClick({ target }) {
@@ -76,7 +81,7 @@ class Game extends Component {
   countCorrectAnswers() {
     const { answer, answerIndex, timer } = this.state;
     const { questions } = this.props;
-    const levelsList = { hard: 3, medium: 2, easy: 1 }
+    const levelsList = { hard: 3, medium: 2, easy: 1 };
     let level;
     const { difficulty } = questions[answerIndex];
     const baseScore = 10;
@@ -85,7 +90,7 @@ class Game extends Component {
       level = levelsList.hard;
     } else if (difficulty === 'medium') {
       level = levelsList.medium;
-    } else { level = levelsList.easy }
+    } else { level = levelsList.easy; }
 
     if (answer === 'correct-answer') {
       const computation = baseScore + (timer + level);
@@ -123,12 +128,9 @@ class Game extends Component {
   renderAnswer(element, isVerified) {
     const { answer, timer } = this.state;
     const disabled = timer <= 0 || answer !== '';
-    // randomificando as respostas
     const answers = [element.correct_answer, ...element.incorrect_answers];
-    // referencia: https://flaviocopes.com/how-to-shuffle-array-javascript/
     const randomAnswers = answers.sort();
-    // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
-    // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
+    const timeOut = timer === 0;
     return randomAnswers.map((quest, i) => {
       if (quest === element.correct_answer) {
         return (
@@ -138,7 +140,8 @@ class Game extends Component {
             value="correct-answer"
             data-testid="correct-answer"
             disabled={ disabled }
-            style={ isVerified ? { border: '3px solid rgb(6, 240, 15)' } : null }
+            style={ isVerified || timeOut ? {
+              border: '3px solid rgb(6, 240, 15)' } : null }
             onClick={ this.handleClick }
           >
             { quest }
@@ -154,7 +157,7 @@ class Game extends Component {
           value="wrong-answer"
           disabled={ disabled }
           data-testid={ `wrong-answer-${i}` }
-          style={ isVerified ? {
+          style={ isVerified || timeOut ? {
             border: '3px solid rgb(255, 0, 0)' } : null }
           onClick={ this.handleClick }
         >
@@ -187,6 +190,8 @@ class Game extends Component {
 
 Game.propTypes = {
   dispatchGetQuestions: PropTypes.func.isRequired,
+  dispatchSetCount: PropTypes.func.isRequired,
+  dispatchSetScore: PropTypes.func.isRequired,
   email: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
@@ -197,8 +202,9 @@ Game.propTypes = {
     map: PropTypes.func,
     question: PropTypes.string,
   }).isRequired,
-  timer: PropTypes.number.isRequired,
   token: PropTypes.string.isRequired,
+  userEmail: PropTypes.string.isRequired,
+  userName: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
