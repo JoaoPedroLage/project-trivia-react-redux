@@ -90,8 +90,7 @@ class Game extends Component {
   }
 
   render() {
-    const { name, email, questions } = this.props;
-    console.log(questions);
+    const { name, email } = this.props;
     return (
       <div>
         <header data-testid="header-profile-picture">
