@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getApi, getQuestions } from '../redux/actions/gameAction';
+import { getQuestions } from '../redux/actions/gameAction';
 import getGravatar from '../services/gravatar';
 
 class Game extends Component {
@@ -167,16 +167,16 @@ class Game extends Component {
   }
 
   render() {
-    const { name, email } = this.props;
+    const { userName, userEmail } = this.props;
     return (
       <div>
         <header data-testid="header-profile-picture">
           <img
-            src={ getGravatar(email) }
+            src={ getGravatar(userEmail) }
             data-testid="header-profile-picture"
             alt="avatar"
           />
-          <h3 data-testid="header-player-name">{ name }</h3>
+          <h3 data-testid="header-player-name">{ userName }</h3>
           <h4 data-testid="header-score">0</h4>
         </header>
         <section>
@@ -189,8 +189,6 @@ class Game extends Component {
 
 Game.propTypes = {
   dispatchGetQuestions: PropTypes.func.isRequired,
-  email: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
     category: PropTypes.string,
     correct_answer: PropTypes.string,
