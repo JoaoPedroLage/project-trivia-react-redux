@@ -12,34 +12,45 @@ class Game extends Component {
       answerIndex: 0,
       isVerified: false,
       timer: 30,
+      assertions: 0,
+      score: 0,
     };
 
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.verifyAnswer = this.verifyAnswer.bind(this);
-    this.creatTimer = this.creatTimer.bind(this);
+    this.creatTimer = this.createTimer.bind(this);
   }
 
   componentDidMount() {
     const { dispatchGetQuestions, token } = this.props;
     dispatchGetQuestions(token);
-    this.creatTimer();
+    this.createTimer();
   }
 
   componentDidUpdate() {
+    const { dispatchSetCount, dispatchSetScore, userName, userEmail } = this.props;
+    const { assertions, score, timer } = this.state;
     const { timer } = this.props;
     const TIME_LIMIT = 0;
     if (timer === TIME_LIMIT) {
       clearInterval(this.gameTimer);
     }
+    dispatchSetCount(assertions);
+    dispatchSetScore(score);
+    const state = { player: {
+      name: userName, assertions, score, gravatarEmail: userEmail
+    }};
+    localStorage
   }
 
   handleClick({ target }) {
-    const { value } = target;
     clearInterval(this.gameTimer);
+    const { value } = target;
     this.setState({ answer: value }, () => {
       this.verifyAnswer();
+      this.countCorrectAnswers();
     });
   }
 
@@ -52,7 +63,7 @@ class Game extends Component {
     }
   }
 
-  creatTimer() {
+  createTimer() {
     const ONE_SECOND = 1000;
     // this.timer para ter alcance global.
     this.gameTimer = setInterval(() => {
@@ -60,6 +71,30 @@ class Game extends Component {
         timer: prevState.timer - 1,
       }));
     }, ONE_SECOND);
+  }
+
+  countCorrectAnswers() {
+    const { answer, answerIndex, timer } = this.state;
+    const { questions } = this.props;
+    const levelsList = { hard: 3, medium: 2, easy: 1 }
+    let level;
+    const { difficulty } = questions[answerIndex];
+    const baseScore = 10;
+
+    if (difficulty === 'hard') {
+      level = levelsList.hard;
+    } else if (difficulty === 'medium') {
+      level = levelsList.medium;
+    } else { level = levelsList.easy }
+
+    if (answer === 'correct-answer') {
+      const computation = baseScore + (timer + level);
+
+      this.setState((prevState) => ({
+        assertions: prevState.assertions + 1,
+        score: prevState.score + computation,
+      }));
+    }
   }
 
   renderQuestions() {
