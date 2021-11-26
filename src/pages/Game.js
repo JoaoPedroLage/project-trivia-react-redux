@@ -8,13 +8,15 @@ class Game extends Component {
   constructor() {
     super();
     this.state = {
-      // answer: '',
+      answer: '',
       answerIndex: 0,
+      isVerified: false,
     };
 
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
-    // this.handleClick = this.handleClick.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+    this.verifyAnswer = this.verifyAnswer.bind(this);
   }
 
   componentDidMount() {
@@ -22,15 +24,26 @@ class Game extends Component {
     dispatchGetQuestions(token);
   }
 
-  // handleClick({ target }) {
-  //   const { value } = target;
-  //   this.setState({ answer: value });
-  // }
+  handleClick({ target }) {
+    const { value } = target;
+    this.setState({ answer: value }, () => {
+      this.verifyAnswer();
+    });
+  }
+
+  verifyAnswer() {
+    const { answer } = this.state;
+    if (answer !== '') {
+      this.setState({
+        isVerified: true,
+      });
+    }
+  }
 
   renderQuestions() {
     const { questions } = this.props;
-    const { answerIndex } = this.state;
-    console.log(questions);
+    const { answerIndex, isVerified } = this.state;
+    // console.log(questions);
     return (
       questions.length > 0
       && questions.map((element, index) => (
@@ -43,14 +56,14 @@ class Game extends Component {
               { element.question }
             </h5>
             <section>
-              { this.renderAnswer(element) }
+              { this.renderAnswer(element, isVerified) }
             </section>
           </div>
         )))
     );
   }
 
-  renderAnswer(element) {
+  renderAnswer(element, isVerified) {
     // randomificando as respostas
     const answers = [element.correct_answer, ...element.incorrect_answers];
     const magicNumber = 0.5;
@@ -66,6 +79,7 @@ class Game extends Component {
             name="question"
             value="correct-answer"
             data-testid="correct-answer"
+            style={ isVerified ? { border: '3px solid rgb(6, 240, 15)' } : null }
             onClick={ this.handleClick }
           >
             { answer }
@@ -80,6 +94,8 @@ class Game extends Component {
           name="question"
           value="wrong-answer"
           data-testid={ `wrong-answer-${i}` }
+          style={ isVerified ? {
+            border: '3px solid rgb(255, 0, 0)' } : null }
           onClick={ this.handleClick }
         >
           { answer }
