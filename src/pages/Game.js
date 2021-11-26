@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getQuestions } from '../redux/actions/gameAction';
+import { getApi, getQuestions } from '../redux/actions/gameAction';
 import getGravatar from '../services/gravatar';
 
 class Game extends Component {
@@ -32,18 +32,17 @@ class Game extends Component {
     const state = { player: {
       name: '', assertions: 0, score: 0, gravatarEmail: '',
     } };
-    localStorage.setItem('state', JSON.string(state));
+    localStorage.setItem('state', JSON.stringify(state));
   }
 
   componentDidUpdate() {
-    const { dispatchSetCount, dispatchSetScore, userName, userEmail } = this.props;
+    const { userName, userEmail } = this.props;
     const { assertions, score, timer } = this.state;
     const TIME_LIMIT = 0;
     if (timer === TIME_LIMIT) {
       clearInterval(this.gameTimer);
     }
-    dispatchSetCount(assertions);
-    dispatchSetScore(score);
+
     const state = { player: {
       name: userName, assertions, score, gravatarEmail: userEmail,
     } };
@@ -190,8 +189,6 @@ class Game extends Component {
 
 Game.propTypes = {
   dispatchGetQuestions: PropTypes.func.isRequired,
-  dispatchSetCount: PropTypes.func.isRequired,
-  dispatchSetScore: PropTypes.func.isRequired,
   email: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
@@ -208,8 +205,8 @@ Game.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  name: state.loginReducer.playerName,
-  email: state.loginReducer.playerEmail,
+  userName: state.loginReducer.playerName,
+  userEmail: state.loginReducer.playerEmail,
   questions: state.questionsReducer.questions,
   token: state.loginReducer.token,
 });
