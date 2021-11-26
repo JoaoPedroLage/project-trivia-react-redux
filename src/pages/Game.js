@@ -12,34 +12,49 @@ class Game extends Component {
       answerIndex: 0,
       isVerified: false,
       timer: 30,
+      assertions: 0,
+      score: 0,
     };
 
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.verifyAnswer = this.verifyAnswer.bind(this);
-    this.creatTimer = this.creatTimer.bind(this);
+    this.creatTimer = this.createTimer.bind(this);
   }
 
   componentDidMount() {
     const { dispatchGetQuestions, token } = this.props;
     dispatchGetQuestions(token);
-    this.creatTimer();
+
+    this.createTimer();
+
+    const state = { player: {
+      name: '', assertions: 0, score: 0, gravatarEmail: '',
+    } };
+    localStorage.setItem('state', JSON.stringify(state));
   }
 
   componentDidUpdate() {
-    const { timer } = this.props;
+    const { userName, userEmail } = this.props;
+    const { assertions, score, timer } = this.state;
     const TIME_LIMIT = 0;
     if (timer === TIME_LIMIT) {
       clearInterval(this.gameTimer);
     }
+
+    const state = { player: {
+      name: userName, assertions, score, gravatarEmail: userEmail,
+    } };
+    localStorage.setItem('state', JSON.stringify(state));
   }
 
   handleClick({ target }) {
-    const { value } = target;
     clearInterval(this.gameTimer);
+    const { value } = target;
     this.setState({ answer: value }, () => {
       this.verifyAnswer();
+      this.countCorrectAnswers();
     });
   }
 
@@ -52,7 +67,7 @@ class Game extends Component {
     }
   }
 
-  creatTimer() {
+  createTimer() {
     const ONE_SECOND = 1000;
     // this.timer para ter alcance global.
     this.gameTimer = setInterval(() => {
@@ -60,6 +75,30 @@ class Game extends Component {
         timer: prevState.timer - 1,
       }));
     }, ONE_SECOND);
+  }
+
+  countCorrectAnswers() {
+    const { answer, answerIndex, timer } = this.state;
+    const { questions } = this.props;
+    const levelsList = { hard: 3, medium: 2, easy: 1 };
+    let level;
+    const { difficulty } = questions[answerIndex];
+    const baseScore = 10;
+
+    if (difficulty === 'hard') {
+      level = levelsList.hard;
+    } else if (difficulty === 'medium') {
+      level = levelsList.medium;
+    } else { level = levelsList.easy; }
+
+    if (answer === 'correct-answer') {
+      const computation = baseScore + (timer + level);
+
+      this.setState((prevState) => ({
+        assertions: prevState.assertions + 1,
+        score: prevState.score + computation,
+      }));
+    }
   }
 
   renderQuestions() {
@@ -88,13 +127,9 @@ class Game extends Component {
   renderAnswer(element, isVerified) {
     const { answer, timer } = this.state;
     const disabled = timer <= 0 || answer !== '';
-    // randomificando as respostas
     const answers = [element.correct_answer, ...element.incorrect_answers];
-    const magicNumber = 0.5;
-    // referencia: https://flaviocopes.com/how-to-shuffle-array-javascript/
-    const randomAnswers = answers.sort(() => Math.random() - magicNumber);
-    // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
-    // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
+    const randomAnswers = answers.sort();
+    const timeOut = timer === 0;
     return randomAnswers.map((quest, i) => {
       if (quest === element.correct_answer) {
         return (
@@ -104,7 +139,8 @@ class Game extends Component {
             value="correct-answer"
             data-testid="correct-answer"
             disabled={ disabled }
-            style={ isVerified ? { border: '3px solid rgb(6, 240, 15)' } : null }
+            style={ isVerified || timeOut ? {
+              border: '3px solid rgb(6, 240, 15)' } : null }
             onClick={ this.handleClick }
           >
             { quest }
@@ -120,7 +156,7 @@ class Game extends Component {
           value="wrong-answer"
           disabled={ disabled }
           data-testid={ `wrong-answer-${i}` }
-          style={ isVerified ? {
+          style={ isVerified || timeOut ? {
             border: '3px solid rgb(255, 0, 0)' } : null }
           onClick={ this.handleClick }
         >
@@ -131,16 +167,16 @@ class Game extends Component {
   }
 
   render() {
-    const { name, email } = this.props;
+    const { userName, userEmail } = this.props;
     return (
       <div>
         <header data-testid="header-profile-picture">
           <img
-            src={ getGravatar(email) }
+            src={ getGravatar(userEmail) }
             data-testid="header-profile-picture"
             alt="avatar"
           />
-          <h3 data-testid="header-player-name">{ name }</h3>
+          <h3 data-testid="header-player-name">{ userName }</h3>
           <h4 data-testid="header-score">0</h4>
         </header>
         <section>
@@ -153,8 +189,6 @@ class Game extends Component {
 
 Game.propTypes = {
   dispatchGetQuestions: PropTypes.func.isRequired,
-  email: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
   questions: PropTypes.shape({
     category: PropTypes.string,
     correct_answer: PropTypes.string,
@@ -163,13 +197,14 @@ Game.propTypes = {
     map: PropTypes.func,
     question: PropTypes.string,
   }).isRequired,
-  timer: PropTypes.number.isRequired,
   token: PropTypes.string.isRequired,
+  userEmail: PropTypes.string.isRequired,
+  userName: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  name: state.loginReducer.playerName,
-  email: state.loginReducer.playerEmail,
+  userName: state.loginReducer.playerName,
+  userEmail: state.loginReducer.playerEmail,
   questions: state.questionsReducer.questions,
   token: state.loginReducer.token,
 });
