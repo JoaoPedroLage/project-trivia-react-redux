@@ -11,21 +11,33 @@ class Game extends Component {
       answer: '',
       answerIndex: 0,
       isVerified: false,
+      timer: 30,
     };
 
     this.renderQuestions = this.renderQuestions.bind(this);
     this.renderAnswer = this.renderAnswer.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.verifyAnswer = this.verifyAnswer.bind(this);
+    this.creatTimer = this.creatTimer.bind(this);
   }
 
   componentDidMount() {
     const { dispatchGetQuestions, token } = this.props;
     dispatchGetQuestions(token);
+    this.creatTimer();
+  }
+
+  componentDidUpdate() {
+    const { timer } = this.props;
+    const TIME_LIMIT = 0;
+    if (timer === TIME_LIMIT) {
+      clearInterval(this.gameTimer);
+    }
   }
 
   handleClick({ target }) {
     const { value } = target;
+    clearInterval(this.gameTimer);
     this.setState({ answer: value }, () => {
       this.verifyAnswer();
     });
@@ -38,6 +50,16 @@ class Game extends Component {
         isVerified: true,
       });
     }
+  }
+
+  creatTimer() {
+    const ONE_SECOND = 1000;
+    // this.timer para ter alcance global.
+    this.gameTimer = setInterval(() => {
+      this.setState((prevState) => ({
+        timer: prevState.timer - 1,
+      }));
+    }, ONE_SECOND);
   }
 
   renderQuestions() {
@@ -64,6 +86,8 @@ class Game extends Component {
   }
 
   renderAnswer(element, isVerified) {
+    const { answer, timer } = this.state;
+    const disabled = timer <= 0 || answer !== '';
     // randomificando as respostas
     const answers = [element.correct_answer, ...element.incorrect_answers];
     const magicNumber = 0.5;
@@ -71,34 +95,36 @@ class Game extends Component {
     const randomAnswers = answers.sort(() => Math.random() - magicNumber);
     // o array sort seta o index de acordo com o resultado da callback, no caso aleatório por causa do math random.
     // o 0.5 se da para impor um parametro entre 0 e 1, de modo a ser uma média entre os limites.
-    return randomAnswers.map((answer, i) => {
-      if (answer === element.correct_answer) {
+    return randomAnswers.map((quest, i) => {
+      if (quest === element.correct_answer) {
         return (
           <button
             type="button"
             name="question"
             value="correct-answer"
             data-testid="correct-answer"
+            disabled={ disabled }
             style={ isVerified ? { border: '3px solid rgb(6, 240, 15)' } : null }
             onClick={ this.handleClick }
           >
-            { answer }
+            { quest }
           </button>
         );
       }
       return (
         <button
-          key={ answer }
+          key={ quest }
           type="button"
-          id={ answer }
+          id={ quest }
           name="question"
           value="wrong-answer"
+          disabled={ disabled }
           data-testid={ `wrong-answer-${i}` }
           style={ isVerified ? {
             border: '3px solid rgb(255, 0, 0)' } : null }
           onClick={ this.handleClick }
         >
-          { answer }
+          { quest }
         </button>
       );
     });
@@ -137,6 +163,7 @@ Game.propTypes = {
     map: PropTypes.func,
     question: PropTypes.string,
   }).isRequired,
+  timer: PropTypes.number.isRequired,
   token: PropTypes.string.isRequired,
 };
 
